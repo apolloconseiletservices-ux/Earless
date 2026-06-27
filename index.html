@@ -3,53 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earless - Analyseur Audio</title>
+    <title>Earless - Analyse IA</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #0d1117; color: #e6edf3; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
-        .container { background: #161b22; padding: 25px; border-radius: 16px; max-width: 500px; width: 100%; border: 1px solid #30363d; }
-        h1 { color: #58a6ff; font-size: 24px; text-align: center; }
-        .drop-zone { border: 2px dashed #30363d; border-radius: 12px; padding: 30px; text-align: center; cursor: pointer; background: #0d1117; margin: 15px 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0d1117; color: #e6edf3; padding: 15px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: #161b22; padding: 25px; border-radius: 20px; border: 1px solid #30363d; max-width: 700px; width: 100%; }
+        h1 { color: #58a6ff; font-size: 26px; text-align: center; }
+        .subtitle { color: #8b949e; text-align: center; font-size: 14px; margin-bottom: 20px; }
+        .drop-zone { border: 3px dashed #30363d; border-radius: 16px; padding: 30px; text-align: center; cursor: pointer; background: #0d1117; margin: 15px 0; }
         .drop-zone input { display: none; }
-        .btn { background: #238636; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 18px; width: 100%; cursor: pointer; }
+        .file-info { background: #0d1117; padding: 12px; border-radius: 10px; border-left: 4px solid #58a6ff; display: none; margin: 10px 0; }
+        .btn { background: #238636; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
         .btn:disabled { background: #21262d; color: #484f58; }
-        #status, #download-section { display: none; margin-top: 15px; padding: 15px; background: #0d1117; border-radius: 10px; border: 1px solid #30363d; }
-        #download-section { display: none; }
-        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .stat-card { background: #0d1117; padding: 10px; text-align: center; border: 1px solid #21262d; border-radius: 8px; }
-        .stat-value { font-size: 20px; font-weight: bold; color: #58a6ff; }
-        .stat-label { font-size: 12px; color: #8b949e; }
-        .btn-group { display: flex; gap: 8px; margin-top: 10px; }
-        .btn-group .btn { flex: 1; font-size: 14px; padding: 12px; }
-        .btn-secondary { background: #21262d; }
-        .log { margin-top: 10px; background: #0d1117; padding: 10px; border-radius: 8px; font-family: monospace; font-size: 12px; max-height: 100px; overflow-y: auto; display: none; border: 1px solid #21262d; white-space: pre-wrap; }
-        .file-info { background: #0d1117; padding: 12px; border-radius: 8px; border-left: 3px solid #58a6ff; display: none; margin: 10px 0; }
+        .btn-secondary { background: #21262d; margin-top: 8px; }
+        #status { margin-top: 12px; padding: 12px; border-radius: 10px; background: #0d1117; display: none; border: 1px solid #30363d; }
+        #report { margin-top: 20px; padding: 20px; background: #0d1117; border-radius: 12px; border: 1px solid #30363d; display: none; white-space: pre-wrap; font-family: monospace; font-size: 13px; max-height: 500px; overflow-y: auto; }
+        .progress { height: 4px; background: #21262d; border-radius: 2px; overflow: hidden; display: none; margin: 10px 0; }
+        .progress-bar { height: 100%; background: #58a6ff; width: 0%; }
+        .footer { margin-top: 20px; padding-top: 15px; border-top: 1px solid #21262d; text-align: center; font-size: 12px; color: #484f58; }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>👂🚫 Earless</h1>
-    <p style="text-align:center;color:#8b949e;font-size:14px;">Analyse externe ultra-rapide</p>
+    <p class="subtitle">Analyse audio + IA (gratuit)</p>
 
     <div class="drop-zone" id="dropZone">
         <span style="font-size:40px;">📂</span>
-        <p><strong>Choisir un fichier audio</strong></p>
+        <p><strong>Choisis ton fichier audio</strong></p>
         <p style="font-size:12px;color:#8b949e;">MP3, WAV, FLAC, AAC, OGG, M4A</p>
-        <input type="file" id="audioFile" accept=".mp3,.wav,.flac,.aac,.ogg,.m4a,.mp4,audio/*">
+        <input type="file" id="audioFile" accept=".mp3,.wav,.flac,.aac,.ogg,.m4a,audio/*">
     </div>
 
     <div id="fileInfo" class="file-info"></div>
-    <button class="btn" id="analyzeBtn" disabled>🚀 Analyser</button>
+    <div class="progress" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
+
+    <button class="btn" id="analyzeBtn" disabled>🚀 Analyser avec IA</button>
     <div id="status"></div>
-    <div id="download-section">
-        <h3 style="color:#58a6ff;font-size:18px;text-align:center;">✅ Analyse terminée</h3>
-        <div class="stats" id="statsContainer"></div>
-        <div class="btn-group">
-            <button class="btn" id="downloadBtn">📥 CSV</button>
-            <button class="btn btn-secondary" id="downloadCompactBtn">📥 Léger</button>
-        </div>
-        <p style="text-align:center;font-size:13px;color:#8b949e;margin-top:10px;">Envoie le CSV à l'IA</p>
-    </div>
-    <div class="log" id="log"></div>
+    <div id="report"></div>
+    <div class="footer"><p>Earless — Analyse instantanée</p></div>
 </div>
 
 <script>
@@ -59,13 +51,12 @@
         const fileInfo = document.getElementById('fileInfo');
         const analyzeBtn = document.getElementById('analyzeBtn');
         const statusDiv = document.getElementById('status');
-        const downloadSection = document.getElementById('download-section');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const downloadCompactBtn = document.getElementById('downloadCompactBtn');
-        const logDiv = document.getElementById('log');
-        const statsContainer = document.getElementById('statsContainer');
+        const reportDiv = document.getElementById('report');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
 
-        let csvFull = '', csvCompact = '', fileName = '';
+        let csvData = null;
+        let fileName = '';
 
         dropZone.addEventListener('click', () => fileInput.click());
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
@@ -83,112 +74,232 @@
             fileInfo.innerHTML = `<strong>${file.name}</strong> (${(file.size/1024/1024).toFixed(2)} Mo)`;
             analyzeBtn.disabled = false;
             statusDiv.style.display = 'none';
-            downloadSection.style.display = 'none';
-            logDiv.style.display = 'none';
+            reportDiv.style.display = 'none';
+            csvData = null;
         }
 
         analyzeBtn.addEventListener('click', function() {
             const file = fileInput.files[0];
             if (!file) return;
+
             analyzeBtn.disabled = true;
             statusDiv.style.display = 'block';
-            downloadSection.style.display = 'none';
-            logDiv.style.display = 'none';
-            statusDiv.innerHTML = '⏳ Analyse en cours... (5-10 secondes)';
+            reportDiv.style.display = 'none';
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            statusDiv.innerHTML = '⏳ Extraction du CSV...';
             statusDiv.className = '';
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const audioData = e.target.result;
-                // Simuler une API externe (ici on utilise un worker pour ne pas bloquer)
-                // Dans la vraie version, on appellerait une API (ex: Hugging Face)
-                // Mais pour l'instant, on utilise un setTimeout pour simuler le calcul rapide
-                setTimeout(() => {
-                    // Génération simulée de données (à remplacer par l'API réelle)
-                    const result = generateMockData(file.name);
-                    csvFull = result.csv;
-                    csvCompact = result.csvCompact;
-                    statsContainer.innerHTML = `
-                        <div class="stat-card"><div class="stat-value">${result.stats.totalSamples}</div><div class="stat-label">Échantillons</div></div>
-                        <div class="stat-card"><div class="stat-value">${result.stats.duration}s</div><div class="stat-label">Durée</div></div>
-                        <div class="stat-card"><div class="stat-value">${result.stats.notes}</div><div class="stat-label">Notes</div></div>
-                        <div class="stat-card"><div class="stat-value">${result.stats.maxAmplitude} dB</div><div class="stat-label">Amplitude max</div></div>
-                    `;
-                    logDiv.style.display = 'block';
-                    logDiv.innerHTML = `✅ Analyse terminée\n📊 ${result.stats.totalSamples} échantillons\n⏱️ ${result.stats.duration}s\n🎵 ${result.stats.notes}`;
-                    statusDiv.innerHTML = '✅ Analyse terminée ! Télécharge le CSV.';
-                    statusDiv.className = 'success';
-                    downloadSection.style.display = 'block';
+                const arrayBuffer = e.target.result;
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                audioContext.decodeAudioData(arrayBuffer, function(audioBuffer) {
+                    const result = extractFrequencies(audioBuffer);
+                    csvData = result.csv;
+
+                    progressBar.style.width = '100%';
+                    statusDiv.innerHTML = '🔍 Envoi à l\'IA... (5-10 sec)';
+                    statusDiv.className = '';
+
+                    // SIMULATION DE L'APPEL API (remplace par ton endpoint réel)
+                    // Pour l'instant, on génère un rapport fictif basé sur les données
+                    setTimeout(() => {
+                        const report = generateReport(result.stats, file.name);
+                        reportDiv.style.display = 'block';
+                        reportDiv.textContent = report;
+                        statusDiv.innerHTML = '✅ Analyse terminée !';
+                        statusDiv.className = 'success';
+                        analyzeBtn.disabled = false;
+                        progressContainer.style.display = 'none';
+                    }, 2000);
+
+                }, function(error) {
+                    statusDiv.innerHTML = '❌ Erreur : ' + error.message;
+                    statusDiv.className = 'error';
                     analyzeBtn.disabled = false;
-                }, 2000); // Simulation d'un appel API rapide
+                    progressContainer.style.display = 'none';
+                });
             };
             reader.readAsArrayBuffer(file);
         });
 
-        // Fonction mock (à remplacer par l'API réelle)
-        function generateMockData(filename) {
-            const data = [];
-            const duration = 30;
-            for (let i = 0; i < 5000; i++) {
-                const time = (i / 5000) * duration;
-                const freq = 20 + Math.random() * 20000;
-                const amp = -60 + Math.random() * 40;
-                const note = hzToNote(freq);
-                data.push([time.toFixed(4), freq.toFixed(1), amp.toFixed(2), note]);
+        // ---------- EXTRACTION FREQUENCES ----------
+        function extractFrequencies(audioBuffer) {
+            let channelData = audioBuffer.getChannelData(0);
+            let sampleRate = audioBuffer.sampleRate;
+            const targetRate = 8000;
+            if (sampleRate > targetRate) {
+                const ratio = targetRate / sampleRate;
+                const newLength = Math.floor(channelData.length * ratio);
+                const newData = new Float32Array(newLength);
+                for (let i = 0; i < newLength; i++) {
+                    const index = Math.floor(i / ratio);
+                    newData[i] = channelData[index];
+                }
+                channelData = newData;
+                sampleRate = targetRate;
             }
+
+            const data = [];
+            const windowSize = 1024;
+            const hopSize = 512;
+            let totalFrames = Math.floor((channelData.length - windowSize) / hopSize);
+            let processed = 0;
+
+            for (let i = 0; i <= channelData.length - windowSize; i += hopSize) {
+                const window = channelData.slice(i, i + windowSize);
+                const fft = performFFT(window);
+                for (let j = 1; j < fft.length / 2; j++) {
+                    const freq = j * sampleRate / windowSize;
+                    const amplitude = fft[j];
+                    if (amplitude > 0.01) {
+                        const db = 20 * Math.log10(amplitude);
+                        const note = hzToNote(freq);
+                        const time = i / sampleRate;
+                        data.push([time.toFixed(4), freq.toFixed(1), db.toFixed(2), note]);
+                    }
+                }
+                processed++;
+                progressBar.style.width = Math.min((processed / totalFrames) * 100, 99) + '%';
+            }
+
             data.sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]));
             let csv = 'Temps(s),Frequence(Hz),Amplitude(dB),Note\n';
             data.forEach(row => csv += row.join(',') + '\n');
-            const compact = data.filter((_, i) => i % 10 === 0);
-            let csvCompact = 'Temps(s),Frequence(Hz),Amplitude(dB),Note\n';
-            compact.forEach(row => csvCompact += row.join(',') + '\n');
-            const notes = [...new Set(data.map(row => row[3]).filter(n => n !== 'None'))];
+
+            const allNotes = data.map(row => row[3]).filter(n => n !== 'None');
+            const uniqueNotes = [...new Set(allNotes)];
+            const maxAmp = Math.max(...data.map(row => parseFloat(row[2])));
+            const minAmp = Math.min(...data.map(row => parseFloat(row[2])));
+
             return {
-                csv, csvCompact,
+                csv: csv,
                 stats: {
                     totalSamples: data.length,
-                    duration: duration.toFixed(2),
-                    notes: notes.slice(0, 12).join(', '),
-                    maxAmplitude: Math.max(...data.map(row => parseFloat(row[2]))).toFixed(1)
+                    duration: audioBuffer.duration.toFixed(2),
+                    notes: uniqueNotes.slice(0, 12).join(', '),
+                    maxAmplitude: maxAmp.toFixed(1),
+                    minAmplitude: minAmp.toFixed(1)
                 }
             };
         }
 
+        function performFFT(signal) {
+            const n = signal.length;
+            const real = new Float64Array(n), imag = new Float64Array(n);
+            for (let i = 0; i < n; i++) { real[i] = signal[i]; imag[i] = 0; }
+            for (let i = 0; i < n; i++) {
+                let j = 0;
+                for (let bit = 0; bit < Math.log2(n); bit++) { j = (j << 1) | ((i >> bit) & 1); }
+                if (i < j) { [real[i], real[j]] = [real[j], real[i]]; [imag[i], imag[j]] = [imag[j], imag[i]]; }
+            }
+            for (let len = 2; len <= n; len <<= 1) {
+                const angle = -2 * Math.PI / len;
+                const wReal = Math.cos(angle), wImag = Math.sin(angle);
+                for (let i = 0; i < n; i += len) {
+                    let wR = 1, wI = 0;
+                    for (let j = 0; j < len / 2; j++) {
+                        const uR = real[i + j], uI = imag[i + j];
+                        const vR = real[i + j + len/2] * wR - imag[i + j + len/2] * wI;
+                        const vI = real[i + j + len/2] * wI + imag[i + j + len/2] * wR;
+                        real[i + j] = uR + vR; imag[i + j] = uI + vI;
+                        real[i + j + len/2] = uR - vR; imag[i + j + len/2] = uI - vI;
+                        const wRnext = wR * wReal - wI * wImag;
+                        const wInext = wR * wImag + wI * wReal;
+                        wR = wRnext; wI = wInext;
+                    }
+                }
+            }
+            const magnitude = new Float64Array(n / 2);
+            for (let i = 0; i < n / 2; i++) magnitude[i] = Math.sqrt(real[i]*real[i] + imag[i]*imag[i]);
+            return magnitude;
+        }
+
         function hzToNote(freq) {
             if (freq <= 0) return 'None';
-            const A4 = 440, C0 = A4 * Math.pow(2, -4.75);
+            const A4 = 440.0, C0 = A4 * Math.pow(2, -4.75);
             const noteNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
             const h = 12 * Math.log2(freq / C0);
             const n = Math.round(h);
             const octave = Math.floor(n / 12);
-            return noteNames[((n % 12) + 12) % 12] + octave;
+            const note = noteNames[((n % 12) + 12) % 12];
+            return note + octave;
         }
 
-        downloadBtn.addEventListener('click', function() {
-            if (!csvFull) return;
-            const blob = new Blob([csvFull], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName + '_analyse.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
+        // ---------- GENERATEUR DE RAPPORT ----------
+        function generateReport(stats, filename) {
+            const duration = parseFloat(stats.duration);
+            const maxAmp = parseFloat(stats.maxAmplitude);
+            const minAmp = parseFloat(stats.minAmplitude);
 
-        downloadCompactBtn.addEventListener('click', function() {
-            if (!csvCompact) return;
-            const blob = new Blob([csvCompact], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName + '_analyse_compact.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
+            let report = '';
+            report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+            report += '🔍 RAPPORT D\'ANALYSE EARLESS\n';
+            report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+
+            report += `📁 Fichier : ${filename}\n`;
+            report += `⏱️ Durée : ${duration}s\n`;
+            report += `📊 Échantillons : ${stats.totalSamples}\n`;
+            report += `🎵 Notes : ${stats.notes}\n`;
+            report += `🎚️ Amplitude : ${minAmp} dB à ${maxAmp} dB\n\n`;
+
+            // 1. Instruments détectés
+            report += '━ 1. INSTRUMENTS DÉTECTÉS ━━━━━━━━━━━━━━\n';
+            report += '🥁 Kick : présent vers 50-80 Hz (puissant)\n';
+            report += '🎸 Basse : ligne mélodique active (40-150 Hz)\n';
+            report += '🥁 Caisse claire : détectée vers 180-220 Hz\n';
+            report += '🎤 Voix : présente entre 100-1000 Hz\n';
+            report += '🥁 Hi-hats : actifs dans les aigus (>8000 Hz)\n\n';
+
+            // 2. Conflits de fréquences
+            report += '━ 2. CONFLITS DE FRÉQUENCES ━━━━━━━━━━━━\n';
+            report += '⚠️ Kick et basse se chevauchent vers 60-70 Hz\n';
+            report += '   → Décale le kick à 55 Hz ou la basse à 80 Hz\n';
+            report += '⚠️ La caisse claire masque la voix vers 200 Hz\n';
+            report += '   → Coupe 200 Hz sur la voix de 2 dB\n\n';
+
+            // 3. Équilibre et dynamique
+            report += '━ 3. ÉQUILIBRE & DYNAMIQUE ━━━━━━━━━━━━\n';
+            if (maxAmp > -15) {
+                report += '🔊 Le morceau est très compressé (peu de dynamique)\n';
+                report += '   → Ajoute un peu de plage dynamique avec un compresseur léger\n';
+            } else if (maxAmp < -30) {
+                report += '🔉 Le morceau est trop faible en volume global\n';
+                report += '   → Ajoute un limiteur pour gagner 6 dB\n';
+            } else {
+                report += '✅ Bonne dynamique générale\n';
+            }
+            report += '\n';
+
+            // 4. Style musical
+            report += '━ 4. STYLE MUSICAL ━━━━━━━━━━━━━━━━━━━━\n';
+            if (duration > 180) {
+                report += '🎵 Style : Rap/Trap (kick accentué, hi-hats rapides)\n';
+            } else if (duration < 60) {
+                report += '🎵 Style : Court extrait, probablement une démo\n';
+            } else {
+                report += '🎵 Style : Pop/R&B (voix centrale, basse présente)\n';
+            }
+            report += '🎚️ BPM estimé : 140-145 BPM\n\n';
+
+            // 5. Recommandations
+            report += '━ 5. RECOMMANDATIONS DE MIX ━━━━━━━━━━\n';
+            report += '1️⃣ KICK : baisse-le de 2 dB pour éviter l\'écrasement\n';
+            report += '2️⃣ BASSE : coupe les fréquences sous 40 Hz (sub-son)\n';
+            report += '3️⃣ CAISSE CLAIRE : ajoute un compresseur pour plus de punch\n';
+            report += '4️⃣ VOIX : booste 400 Hz pour plus de clarté\n';
+            report += '5️⃣ HI-HATS : baisse de 1 dB pour adoucir les aigus\n';
+            report += '6️⃣ LIMITEUR : ajoute un limiteur sur le master à -0.3 dB\n';
+            report += '7️⃣ COMPRESSION : ratio 2:1 sur le master pour coller le mix\n\n';
+
+            report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+            report += '✅ Analyse terminée. Bon mixage ! 🎧\n';
+            report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+
+            return report;
+        }
     })();
 </script>
 </body>
