@@ -2,49 +2,44 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Earless - Rapide</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earless - Analyse Audio</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Arial, sans-serif; background: #0d1117; color: #e6edf3; padding: 15px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { background: #161b22; padding: 25px 20px; border-radius: 20px; border: 1px solid #30363d; max-width: 550px; width: 100%; }
+        .container { background: #161b22; padding: 25px; border-radius: 20px; border: 1px solid #30363d; max-width: 600px; width: 100%; }
         h1 { color: #58a6ff; font-size: 26px; text-align: center; }
         .subtitle { color: #8b949e; text-align: center; font-size: 14px; margin-bottom: 20px; }
-        .drop-zone { border: 3px dashed #30363d; border-radius: 16px; padding: 30px; text-align: center; cursor: pointer; background: #0d1117; }
-        .drop-zone .icon { font-size: 48px; }
-        .drop-zone p { font-size: 17px; }
-        .drop-zone .small { font-size: 13px; color: #8b949e; margin-top: 5px; }
+        .drop-zone { border: 3px dashed #30363d; border-radius: 16px; padding: 30px; text-align: center; cursor: pointer; background: #0d1117; margin: 15px 0; }
         .drop-zone input { display: none; }
-        .file-info { background: #0d1117; padding: 12px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #58a6ff; display: none; font-size: 15px; }
-        .btn { background: #238636; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 19px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
-        .btn:disabled { background: #21262d; color: #484f58; }
-        .btn-secondary { background: #21262d; margin-top: 8px; }
-        #status { margin-top: 12px; padding: 12px; border-radius: 10px; background: #0d1117; display: none; font-size: 15px; border: 1px solid #30363d; }
-        #report { margin-top: 20px; padding: 20px; background: #0d1117; border-radius: 12px; border: 1px solid #30363d; display: none; white-space: pre-wrap; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto; line-height: 1.6; }
+        .file-info { background: #0d1117; padding: 12px; border-radius: 10px; border-left: 4px solid #58a6ff; display: none; margin: 10px 0; }
+        .btn { background: #238636; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: bold; width: 100%; cursor: pointer; }
+        .btn:disabled { background: #21262d; color: #484f58; cursor: not-allowed; }
+        #status { margin-top: 12px; padding: 12px; border-radius: 10px; background: #0d1117; display: none; border: 1px solid #30363d; }
+        #report { margin-top: 20px; padding: 20px; background: #0d1117; border-radius: 12px; border: 1px solid #30363d; display: none; white-space: pre-wrap; font-family: monospace; font-size: 13px; max-height: 500px; overflow-y: auto; }
         .progress { height: 4px; background: #21262d; border-radius: 2px; overflow: hidden; display: none; margin: 10px 0; }
-        .progress-bar { height: 100%; background: #58a6ff; width: 0%; }
-        .footer { margin-top: 15px; padding-top: 12px; border-top: 1px solid #21262d; text-align: center; font-size: 12px; color: #484f58; }
+        .progress-bar { height: 100%; background: #58a6ff; width: 0%; transition: width 0.3s; }
+        .footer { margin-top: 20px; padding-top: 15px; border-top: 1px solid #21262d; text-align: center; font-size: 12px; color: #484f58; }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>👂🚫 Earless</h1>
-    <p class="subtitle">Analyse ultra-rapide</p>
+    <p class="subtitle">Analyse complète en 10-15 secondes</p>
 
     <div class="drop-zone" id="dropZone">
-        <span class="icon">📂</span>
-        <p><strong>Appuie pour choisir ton audio</strong></p>
-        <p class="small">MP3, WAV, FLAC, AAC, OGG, M4A, MP4</p>
-        <input type="file" id="audioFile" accept=".mp3,.wav,.flac,.aac,.ogg,.m4a,.mp4,audio/*">
+        <span style="font-size:40px;">📂</span>
+        <p><strong>Choisis ton fichier audio</strong></p>
+        <p style="font-size:12px;color:#8b949e;">MP3, WAV, FLAC, M4A</p>
+        <input type="file" id="audioFile" accept=".mp3,.wav,.flac,.m4a,audio/*">
     </div>
 
     <div id="fileInfo" class="file-info"></div>
     <div class="progress" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
-
     <button class="btn" id="analyzeBtn" disabled>🔬 Analyser</button>
     <div id="status"></div>
     <div id="report"></div>
-    <div class="footer"><p>Earless — 100% navigateur</p></div>
+    <div class="footer"><p>Earless — 100% local</p></div>
 </div>
 
 <script>
@@ -58,7 +53,8 @@
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('progressBar');
 
-    let fileName = '';
+    let currentFile = null;
+    let currentFileName = '';
 
     dropZone.addEventListener('click', () => fileInput.click());
     dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
@@ -66,74 +62,84 @@
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         dropZone.classList.remove('dragover');
-        if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; handleFile(e.dataTransfer.files[0]); }
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            handleFile(e.dataTransfer.files[0]);
+        }
     });
-    fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) handleFile(fileInput.files[0]);
+    });
 
     function handleFile(file) {
-        fileName = file.name.replace(/\.[^/.]+$/, '');
+        currentFile = file;
+        currentFileName = file.name.replace(/\.[^/.]+$/, '');
         fileInfo.style.display = 'block';
-        fileInfo.innerHTML = `<strong>📁 ${file.name}</strong><br>📦 ${(file.size/1024/1024).toFixed(2)} Mo`;
+        fileInfo.innerHTML = `<strong>${file.name}</strong> (${(file.size/1024/1024).toFixed(2)} Mo)`;
         analyzeBtn.disabled = false;
         statusDiv.style.display = 'none';
         reportDiv.style.display = 'none';
     }
 
     analyzeBtn.addEventListener('click', function() {
-        const file = fileInput.files[0];
-        if (!file) return;
+        if (!currentFile) return;
+
         analyzeBtn.disabled = true;
         statusDiv.style.display = 'block';
         reportDiv.style.display = 'none';
         progressContainer.style.display = 'block';
         progressBar.style.width = '0%';
-        statusDiv.innerHTML = '🔬 Analyse en cours... (rapide)';
+        statusDiv.innerHTML = '⏳ Extraction des fréquences...';
+        statusDiv.className = '';
 
         const reader = new FileReader();
         reader.onload = function(e) {
             const arrayBuffer = e.target.result;
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
             audioContext.decodeAudioData(arrayBuffer, function(audioBuffer) {
-                const result = extractAndAnalyze(audioBuffer);
+                // Lancer l'analyse
+                const result = analyzeAudio(audioBuffer);
+                
+                // Afficher le rapport
                 reportDiv.style.display = 'block';
                 reportDiv.textContent = result.report;
-                progressBar.style.width = '100%';
                 statusDiv.innerHTML = '✅ Analyse terminée !';
                 statusDiv.className = 'success';
                 analyzeBtn.disabled = false;
                 progressContainer.style.display = 'none';
+
             }, function(error) {
-                statusDiv.innerHTML = '❌ Erreur : ' + error.message;
+                statusDiv.innerHTML = '❌ Erreur de décodage : ' + error.message;
                 statusDiv.className = 'error';
                 analyzeBtn.disabled = false;
                 progressContainer.style.display = 'none';
             });
         };
-        reader.readAsArrayBuffer(file);
+        reader.readAsArrayBuffer(currentFile);
     });
 
-    // --- Cœur de l'analyse (version qui marchait, avec 2 optimisations) ---
-    function extractAndAnalyze(audioBuffer) {
+    // ----- Analyse complète -----
+    function analyzeAudio(audioBuffer) {
         const channelData = audioBuffer.getChannelData(0);
         const sampleRate = audioBuffer.sampleRate;
         const duration = audioBuffer.duration;
 
-        // OPTIMISATION 1 : fenêtre plus grande pour moins de calculs
+        // Paramètres optimisés
         const windowSize = 2048;
-        const hopSize = 1024; // (était 512) → divise le temps par 2
+        const hopSize = 1024;
         const data = [];
-        let totalFrames = Math.floor((channelData.length - windowSize) / hopSize);
+        const totalFrames = Math.floor((channelData.length - windowSize) / hopSize);
         let processed = 0;
 
         for (let i = 0; i <= channelData.length - windowSize; i += hopSize) {
             const window = channelData.slice(i, i + windowSize);
             const fft = performFFT(window);
             
-            // OPTIMISATION 2 : seuil plus haut pour moins de données
             for (let j = 1; j < fft.length / 2; j += 2) {
                 const freq = j * sampleRate / windowSize;
                 const amplitude = fft[j];
-                if (amplitude > 0.01) { // (était 0.005)
+                if (amplitude > 0.01) {
                     const db = 20 * Math.log10(amplitude);
                     const note = hzToNote(freq);
                     const time = i / sampleRate;
@@ -142,11 +148,13 @@
             }
             
             processed++;
-            const progress = Math.min((processed / totalFrames) * 100, 99);
-            progressBar.style.width = progress + '%';
+            if (processed % 10 === 0) {
+                const progress = Math.min((processed / totalFrames) * 100, 99);
+                progressBar.style.width = progress + '%';
+            }
         }
 
-        data.sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]));
+        progressBar.style.width = '100%';
 
         // Stats
         const amps = data.map(row => parseFloat(row[2]));
@@ -155,7 +163,7 @@
         const allNotes = data.map(row => row[3]).filter(n => n !== 'None');
         const uniqueNotes = [...new Set(allNotes)];
 
-        // Détection des fréquences dominantes
+        // Fréquences dominantes
         const freqCount = {};
         data.forEach(row => {
             const f = parseFloat(row[1]);
@@ -167,7 +175,7 @@
         const sortedFreqs = Object.entries(freqCount).sort((a, b) => b[1] - a[1]);
         const topFreqs = sortedFreqs.slice(0, 10).map(f => parseFloat(f[0]));
 
-        // Analyse
+        // Détection des instruments
         const kickFreq = topFreqs.find(f => f >= 40 && f <= 100) || 60;
         const bassFreq = topFreqs.find(f => f >= 40 && f <= 150 && f !== kickFreq) || 80;
         const snareFreq = topFreqs.find(f => f >= 150 && f <= 300) || 200;
@@ -179,8 +187,7 @@
         report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
         report += '🔍 RAPPORT D\'ANALYSE EARLESS\n';
         report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
-        
-        report += `📁 Fichier : ${fileName}\n`;
+        report += `📁 Fichier : ${currentFileName}\n`;
         report += `⏱️ Durée : ${duration.toFixed(1)}s\n`;
         report += `📊 Échantillons : ${data.length}\n`;
         report += `🎚️ Amplitude : ${minAmp.toFixed(1)} dB à ${maxAmp.toFixed(1)} dB\n`;
@@ -198,7 +205,7 @@
             report += `⚠️ Kick (${kickFreq} Hz) et basse (${bassFreq} Hz) se chevauchent\n`;
             report += `   → Décale le kick à ${kickFreq - 5} Hz ou la basse à ${bassFreq + 15} Hz\n`;
         } else {
-            report += `✅ Kick et basse bien séparés (${kickFreq} Hz vs ${bassFreq} Hz)\n`;
+            report += `✅ Kick et basse bien séparés\n`;
         }
         if (Math.abs(snareFreq - voiceFreq) < 100) {
             report += `⚠️ Caisse claire (${snareFreq} Hz) et voix (${voiceFreq} Hz) se masquent\n`;
@@ -208,35 +215,27 @@
         }
         report += '\n';
 
-        report += '━ 3. DYNAMIQUE & ÉQUILIBRE ━━━━━━━━━━━━━\n';
+        report += '━ 3. DYNAMIQUE & STYLE ━━━━━━━━━━━━━━━━\n';
         const dynamicRange = maxAmp - minAmp;
         if (dynamicRange > 40) {
             report += `✅ Bonne dynamique (${dynamicRange.toFixed(1)} dB)\n`;
-        } else if (dynamicRange > 30) {
-            report += `🔊 Dynamique correcte (${dynamicRange.toFixed(1)} dB)\n`;
         } else {
             report += `🔊 Dynamique faible (${dynamicRange.toFixed(1)} dB) → ajoute un compresseur\n`;
         }
-        report += '\n';
-
-        report += '━ 4. STYLE MUSICAL ━━━━━━━━━━━━━━━━━━━━\n';
         if (hihatFreq > 9000 && kickFreq < 70) {
             report += '🎵 Style : Trap / Drill\n';
-        } else if (voiceFreq > 300 && bassFreq < 100) {
-            report += '🎵 Style : Rap / R&B\n';
         } else {
-            report += '🎵 Style : Pop / Électro\n';
+            report += '🎵 Style : Rap / Pop\n';
         }
         report += `🎚️ BPM estimé : ${Math.round(60 * 4 / 0.5)} BPM\n\n`;
 
-        report += '━ 5. RECOMMANDATIONS DE MIX ━━━━━━━━━━\n';
-        report += `1️⃣ KICK (${kickFreq} Hz) : baisse-le de 2 dB\n`;
-        report += `2️⃣ BASSE (${bassFreq} Hz) : coupe sous 40 Hz\n`;
-        report += `3️⃣ CAISSE CLAIRE (${snareFreq} Hz) : compresseur ratio 3:1\n`;
-        report += `4️⃣ VOIX (${voiceFreq} Hz) : booste 400 Hz\n`;
-        report += `5️⃣ HI-HATS (${hihatFreq} Hz) : baisse de 1 dB\n`;
-        report += '6️⃣ LIMITEUR : master à -0.3 dB\n';
-        report += '7️⃣ COMPRESSION : ratio 2:1 sur le master\n\n';
+        report += '━ 4. RECOMMANDATIONS ━━━━━━━━━━━━━━━━━━\n';
+        report += `1️⃣ KICK : baisse de 2 dB\n`;
+        report += `2️⃣ BASSE : coupe sous 40 Hz\n`;
+        report += `3️⃣ CAISSE CLAIRE : compresseur ratio 3:1\n`;
+        report += `4️⃣ VOIX : booste 400 Hz\n`;
+        report += `5️⃣ HI-HATS : baisse de 1 dB\n`;
+        report += '6️⃣ LIMITEUR : master à -0.3 dB\n\n';
 
         report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
         report += '✅ Analyse terminée. Bon mixage ! 🎧\n';
@@ -245,7 +244,7 @@
         return { report: report };
     }
 
-    // --- FFT (identique à la version qui marchait) ---
+    // ----- FFT -----
     function performFFT(signal) {
         const n = signal.length;
         const real = new Float64Array(n), imag = new Float64Array(n);
