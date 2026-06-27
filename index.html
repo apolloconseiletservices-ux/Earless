@@ -2,76 +2,82 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyseur Audio → CSV</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Earless - Analyseur Audio</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; background: #0d1117; color: #e6edf3; }
-        .container { background: #161b22; padding: 30px; border-radius: 16px; border: 1px solid #30363d; }
-        h1 { color: #58a6ff; font-size: 24px; margin-bottom: 5px; }
-        .subtitle { color: #8b949e; margin-top: 0; }
-        .drop-zone { border: 2px dashed #30363d; border-radius: 12px; padding: 40px; text-align: center; margin: 20px 0; cursor: pointer; transition: 0.3s; }
-        .drop-zone:hover, .drop-zone.dragover { border-color: #58a6ff; background: #0d1117; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0d1117; color: #e6edf3; padding: 15px; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .container { background: #161b22; padding: 25px 20px; border-radius: 20px; border: 1px solid #30363d; max-width: 600px; width: 100%; }
+        h1 { color: #58a6ff; font-size: 28px; text-align: center; margin-bottom: 5px; }
+        .subtitle { color: #8b949e; text-align: center; font-size: 16px; margin-bottom: 20px; }
+        .drop-zone { border: 3px dashed #30363d; border-radius: 16px; padding: 40px 20px; text-align: center; margin: 15px 0; cursor: pointer; transition: 0.3s; background: #0d1117; }
+        .drop-zone.dragover { border-color: #58a6ff; background: #161b22; }
+        .drop-zone .icon { font-size: 56px; display: block; margin-bottom: 10px; }
+        .drop-zone p { font-size: 18px; color: #c9d1d9; }
+        .drop-zone .small { font-size: 14px; color: #8b949e; margin-top: 8px; }
         .drop-zone input { display: none; }
-        .file-info { background: #0d1117; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 3px solid #58a6ff; display: none; }
-        .btn { background: #238636; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.2s; }
-        .btn:hover { background: #2ea043; }
+        .file-info { background: #0d1117; padding: 15px; border-radius: 12px; margin: 15px 0; border-left: 4px solid #58a6ff; display: none; font-size: 16px; }
+        .btn { background: #238636; color: white; border: none; padding: 18px 20px; border-radius: 14px; font-size: 20px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; margin-top: 10px; }
         .btn:disabled { background: #21262d; color: #484f58; cursor: not-allowed; }
-        .btn-secondary { background: #21262d; color: #c9d1d9; }
-        .btn-secondary:hover { background: #30363d; }
-        #status { margin-top: 20px; padding: 15px; border-radius: 8px; background: #0d1117; display: none; border: 1px solid #30363d; }
+        .btn-secondary { background: #21262d; color: #c9d1d9; margin-top: 10px; }
+        #status { margin-top: 15px; padding: 15px; border-radius: 12px; background: #0d1117; display: none; font-size: 16px; border: 1px solid #30363d; }
         #status.success { border-color: #238636; }
         #status.error { border-color: #da3633; }
         #status.warning { border-color: #d29922; }
-        #download-section { display: none; margin-top: 20px; padding: 20px; background: #0d1117; border-radius: 8px; border: 1px solid #30363d; }
-        .log { margin-top: 20px; background: #0d1117; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; display: none; border: 1px solid #21262d; }
-        .log-line { color: #8b949e; }
-        .log-line .highlight { color: #58a6ff; }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 15px 0; }
-        .stat-card { background: #0d1117; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #21262d; }
-        .stat-value { font-size: 20px; font-weight: bold; color: #58a6ff; }
-        .stat-label { font-size: 12px; color: #8b949e; }
-        .progress { width: 100%; height: 4px; background: #21262d; border-radius: 2px; overflow: hidden; display: none; margin: 15px 0; }
-        .progress-bar { height: 100%; background: #58a6ff; width: 0%; transition: width 0.1s; }
-        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #21262d; font-size: 12px; color: #484f58; text-align: center; }
+        #download-section { display: none; margin-top: 20px; padding: 20px; background: #0d1117; border-radius: 12px; border: 1px solid #30363d; }
+        #download-section h3 { color: #58a6ff; font-size: 20px; margin-bottom: 10px; text-align: center; }
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .stat-card { background: #0d1117; padding: 12px; border-radius: 10px; text-align: center; border: 1px solid #21262d; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #58a6ff; }
+        .stat-label { font-size: 13px; color: #8b949e; }
+        .log { margin-top: 15px; background: #0d1117; padding: 15px; border-radius: 12px; font-family: monospace; font-size: 13px; max-height: 150px; overflow-y: auto; display: none; border: 1px solid #21262d; white-space: pre-wrap; word-break: break-word; }
+        .progress { width: 100%; height: 6px; background: #21262d; border-radius: 3px; overflow: hidden; display: none; margin: 15px 0; }
+        .progress-bar { height: 100%; background: #58a6ff; width: 0%; transition: width 0.2s; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-group .btn { flex: 1; min-width: 120px; }
+        .footer { margin-top: 20px; padding-top: 15px; border-top: 1px solid #21262d; text-align: center; font-size: 13px; color: #484f58; }
+        .footer a { color: #58a6ff; text-decoration: none; }
+        @media (max-width: 480px) {
+            .container { padding: 15px; }
+            h1 { font-size: 24px; }
+            .drop-zone { padding: 30px 15px; }
+            .drop-zone .icon { font-size: 44px; }
+            .btn { font-size: 18px; padding: 16px; }
+            .stats { grid-template-columns: 1fr 1fr; }
+            .stat-value { font-size: 20px; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎵 Analyseur Audio → CSV</h1>
-        <p class="subtitle">Extrait les fréquences d'un fichier audio pour que l'IA puisse analyser ta musique</p>
+        <h1>👂🚫 Earless</h1>
+        <p class="subtitle">L'IA qui entend sans oreilles</p>
 
         <div class="drop-zone" id="dropZone">
-            <div style="font-size: 48px; margin-bottom: 10px;">📂</div>
-            <p><strong>Glisse ton fichier audio ici</strong><br>ou clique pour parcourir</p>
-            <p style="font-size: 12px; color: #8b949e; margin-top: 10px;">WAV, MP3, FLAC, AAC, OGG, etc.</p>
-            <input type="file" id="audioFile" accept="audio/*">
+            <span class="icon">📂</span>
+            <p><strong>Appuie ici pour choisir ton audio</strong></p>
+            <p class="small">MP3, WAV, FLAC, AAC, OGG, M4A, MP4, WEBM</p>
+            <input type="file" id="audioFile" accept=".mp3,.wav,.flac,.aac,.ogg,.m4a,.mp4,.webm,audio/*">
         </div>
 
         <div id="fileInfo" class="file-info"></div>
+        <div class="progress" id="progressContainer"><div class="progress-bar" id="progressBar"></div></div>
 
-        <div class="progress" id="progressContainer">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-
-        <button class="btn" id="analyzeBtn" disabled>🔬 Analyser et générer le CSV</button>
-
+        <button class="btn" id="analyzeBtn" disabled>🔬 Analyser</button>
         <div id="status"></div>
 
         <div id="download-section">
-            <h3 style="color: #58a6ff; margin: 0 0 10px 0;">✅ Fichier CSV prêt !</h3>
+            <h3>✅ Prêt !</h3>
             <div class="stats" id="statsContainer"></div>
-            <button class="btn" id="downloadBtn">📥 Télécharger le CSV</button>
-            <button class="btn btn-secondary" id="downloadCompactBtn" style="margin-left:10px;">📥 Version légère</button>
-            <p style="font-size: 12px; color: #8b949e; margin-top: 10px;">Envoie ce fichier à l'IA pour une analyse musicale complète.</p>
+            <div class="btn-group">
+                <button class="btn" id="downloadBtn">📥 CSV complet</button>
+                <button class="btn btn-secondary" id="downloadCompactBtn">📥 Version légère</button>
+            </div>
+            <p style="text-align:center;font-size:14px;color:#8b949e;margin-top:10px;">Envoie le CSV à l'IA pour l'analyse</p>
         </div>
 
         <div class="log" id="log"></div>
-
-        <div class="footer">
-            <p>💡 Utilise un fichier WAV pour une meilleure précision.</p>
-            <p>🔗 <a href="https://github.com" style="color: #58a6ff; text-decoration: none;">GitHub</a></p>
-        </div>
+        <div class="footer"><p>🔗 <a href="#">Earless</a> — 100% navigateur</p></div>
     </div>
 
     <script>
@@ -89,84 +95,62 @@
             const progressBar = document.getElementById('progressBar');
             const statsContainer = document.getElementById('statsContainer');
 
-            let csvFull = '';
-            let csvCompact = '';
-            let fileName = '';
+            let csvFull = '', csvCompact = '', fileName = '';
 
+            dropZone.addEventListener('click', () => fileInput.click());
             dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
             dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
             dropZone.addEventListener('drop', (e) => {
                 e.preventDefault();
                 dropZone.classList.remove('dragover');
-                if (e.dataTransfer.files.length) {
-                    fileInput.files = e.dataTransfer.files;
-                    handleFile(e.dataTransfer.files[0]);
-                }
+                if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; handleFile(e.dataTransfer.files[0]); }
             });
-            dropZone.addEventListener('click', () => fileInput.click());
-
-            fileInput.addEventListener('change', () => {
-                if (fileInput.files.length) handleFile(fileInput.files[0]);
-            });
+            fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
 
             function handleFile(file) {
                 fileName = file.name.replace(/\.[^/.]+$/, '');
                 fileInfo.style.display = 'block';
-                fileInfo.innerHTML = `<strong>📁 ${file.name}</strong><br>Taille : ${(file.size / 1024 / 1024).toFixed(2)} Mo`;
+                fileInfo.innerHTML = `<strong>📁 ${file.name}</strong><br>📦 ${(file.size/1024/1024).toFixed(2)} Mo • ${file.type || 'inconnu'}`;
                 analyzeBtn.disabled = false;
                 statusDiv.style.display = 'none';
                 downloadSection.style.display = 'none';
                 logDiv.style.display = 'none';
-                csvFull = '';
-                csvCompact = '';
+                csvFull = ''; csvCompact = '';
             }
 
             analyzeBtn.addEventListener('click', function() {
                 const file = fileInput.files[0];
                 if (!file) return;
-
                 analyzeBtn.disabled = true;
                 statusDiv.style.display = 'block';
                 downloadSection.style.display = 'none';
                 logDiv.style.display = 'none';
                 progressContainer.style.display = 'block';
                 progressBar.style.width = '0%';
-                showStatus('info', '🔬 Extraction des fréquences en cours...');
+                showStatus('info', '🔬 Analyse en cours...');
 
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const arrayBuffer = e.target.result;
                     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
                     audioContext.decodeAudioData(arrayBuffer, function(audioBuffer) {
                         const result = extractFrequencies(audioBuffer);
-                        csvFull = result.csv;
-                        csvCompact = result.csvCompact;
-
+                        csvFull = result.csv; csvCompact = result.csvCompact;
                         statsContainer.innerHTML = `
                             <div class="stat-card"><div class="stat-value">${result.stats.totalSamples}</div><div class="stat-label">Échantillons</div></div>
                             <div class="stat-card"><div class="stat-value">${result.stats.duration}s</div><div class="stat-label">Durée</div></div>
                             <div class="stat-card"><div class="stat-value">${result.stats.notes}</div><div class="stat-label">Notes</div></div>
                             <div class="stat-card"><div class="stat-value">${result.stats.maxAmplitude} dB</div><div class="stat-label">Amplitude max</div></div>
                         `;
-
                         logDiv.style.display = 'block';
-                        logDiv.innerHTML = `
-                            <div class="log-line">🔍 <span class="highlight">Analyse terminée</span></div>
-                            <div class="log-line">📊 ${result.stats.totalSamples} échantillons</div>
-                            <div class="log-line">🎵 Notes : ${result.stats.notes}</div>
-                            <div class="log-line">🎚️ Amplitude max : ${result.stats.maxAmplitude} dB</div>
-                            <div class="log-line">⏱️ Durée : ${result.stats.duration} secondes</div>
-                        `;
-
+                        logDiv.innerHTML = `🔍 Analyse terminée\n📊 ${result.stats.totalSamples} échantillons\n🎵 Notes : ${result.stats.notes}\n🎚️ Amplitude max : ${result.stats.maxAmplitude} dB\n⏱️ Durée : ${result.stats.duration}s`;
                         progressBar.style.width = '100%';
-                        showStatus('success', '✅ Analyse terminée ! Télécharge le CSV ci-dessous.');
+                        showStatus('success', '✅ Terminé ! Télécharge le CSV.');
                         downloadSection.style.display = 'block';
                         analyzeBtn.disabled = false;
                         progressContainer.style.display = 'none';
-
                     }, function(error) {
-                        showStatus('error', '❌ Erreur : ' + error.message);
+                        showStatus('error', '❌ Erreur : ' + error.message + '. Essaie un autre fichier.');
                         analyzeBtn.disabled = false;
                         progressContainer.style.display = 'none';
                     });
@@ -178,16 +162,13 @@
                 const data = [];
                 const channelData = audioBuffer.getChannelData(0);
                 const sampleRate = audioBuffer.sampleRate;
-                const windowSize = 2048;
-                const hopSize = 512;
-
+                const windowSize = 2048, hopSize = 512;
                 let totalFrames = Math.floor((channelData.length - windowSize) / hopSize);
                 let processed = 0;
 
                 for (let i = 0; i <= channelData.length - windowSize; i += hopSize) {
                     const window = channelData.slice(i, i + windowSize);
                     const fft = performFFT(window);
-
                     for (let j = 1; j < fft.length / 2; j++) {
                         const freq = j * sampleRate / windowSize;
                         const amplitude = fft[j];
@@ -198,17 +179,13 @@
                             data.push([time.toFixed(4), freq.toFixed(1), db.toFixed(2), note]);
                         }
                     }
-
                     processed++;
-                    const progress = Math.min((processed / totalFrames) * 100, 99);
-                    progressBar.style.width = progress + '%';
+                    progressBar.style.width = Math.min((processed / totalFrames) * 100, 99) + '%';
                 }
-
                 data.sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]));
 
                 let csv = 'Temps(s),Frequence(Hz),Amplitude(dB),Note\n';
                 data.forEach(row => csv += row.join(',') + '\n');
-
                 let compactData = data.length > 5000 ? data.filter((_, i) => i % Math.floor(data.length / 5000) === 0) : data;
                 let csvCompact = 'Temps(s),Frequence(Hz),Amplitude(dB),Note\n';
                 compactData.forEach(row => csvCompact += row.join(',') + '\n');
@@ -216,10 +193,8 @@
                 const allNotes = data.map(row => row[3]).filter(n => n !== 'None');
                 const uniqueNotes = [...new Set(allNotes)];
                 const maxAmp = Math.max(...data.map(row => parseFloat(row[2])));
-
                 return {
-                    csv: csv,
-                    csvCompact: csvCompact,
+                    csv, csvCompact,
                     stats: {
                         totalSamples: data.length,
                         duration: audioBuffer.duration.toFixed(2),
@@ -231,54 +206,44 @@
 
             function performFFT(signal) {
                 const n = signal.length;
-                const real = new Float64Array(n);
-                const imag = new Float64Array(n);
+                const real = new Float64Array(n), imag = new Float64Array(n);
                 for (let i = 0; i < n; i++) { real[i] = signal[i]; imag[i] = 0; }
-
                 for (let i = 0; i < n; i++) {
                     let j = 0;
-                    for (let bit = 0; bit < Math.log2(n); bit++) {
-                        j = (j << 1) | ((i >> bit) & 1);
-                    }
+                    for (let bit = 0; bit < Math.log2(n); bit++) { j = (j << 1) | ((i >> bit) & 1); }
                     if (i < j) { [real[i], real[j]] = [real[j], real[i]]; [imag[i], imag[j]] = [imag[j], imag[i]]; }
                 }
-
                 for (let len = 2; len <= n; len <<= 1) {
                     const angle = -2 * Math.PI / len;
-                    const wReal = Math.cos(angle);
-                    const wImag = Math.sin(angle);
+                    const wReal = Math.cos(angle), wImag = Math.sin(angle);
                     for (let i = 0; i < n; i += len) {
                         let wR = 1, wI = 0;
                         for (let j = 0; j < len / 2; j++) {
                             const uR = real[i + j], uI = imag[i + j];
-                            const vR = real[i + j + len / 2] * wR - imag[i + j + len / 2] * wI;
-                            const vI = real[i + j + len / 2] * wI + imag[i + j + len / 2] * wR;
+                            const vR = real[i + j + len/2] * wR - imag[i + j + len/2] * wI;
+                            const vI = real[i + j + len/2] * wI + imag[i + j + len/2] * wR;
                             real[i + j] = uR + vR; imag[i + j] = uI + vI;
-                            real[i + j + len / 2] = uR - vR; imag[i + j + len / 2] = uI - vI;
+                            real[i + j + len/2] = uR - vR; imag[i + j + len/2] = uI - vI;
                             const wRnext = wR * wReal - wI * wImag;
                             const wInext = wR * wImag + wI * wReal;
                             wR = wRnext; wI = wInext;
                         }
                     }
                 }
-
                 const magnitude = new Float64Array(n / 2);
-                for (let i = 0; i < n / 2; i++) {
-                    magnitude[i] = Math.sqrt(real[i] * real[i] + imag[i] * imag[i]);
-                }
+                for (let i = 0; i < n / 2; i++) magnitude[i] = Math.sqrt(real[i]*real[i] + imag[i]*imag[i]);
                 return magnitude;
             }
 
             function hzToNote(freq) {
                 if (freq <= 0) return 'None';
-                const A4 = 440.0;
-                const C0 = A4 * Math.pow(2, -4.75);
-                const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                const A4 = 440.0, C0 = A4 * Math.pow(2, -4.75);
+                const noteNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
                 const h = 12 * Math.log2(freq / C0);
                 const n = Math.round(h);
                 const octave = Math.floor(n / 12);
                 const note = noteNames[((n % 12) + 12) % 12];
-                return `${note}${octave}`;
+                return note + octave;
             }
 
             function showStatus(type, message) {
@@ -293,8 +258,10 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${fileName}_analyse.csv`;
+                a.download = fileName + '_analyse.csv';
+                document.body.appendChild(a);
                 a.click();
+                document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             });
 
@@ -304,8 +271,10 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${fileName}_analyse_compact.csv`;
+                a.download = fileName + '_analyse_compact.csv';
+                document.body.appendChild(a);
                 a.click();
+                document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             });
         })();
